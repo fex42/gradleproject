@@ -3,6 +3,7 @@
  */
 package gradleproject
 
+import com.apurebase.kgraphql.KGraphQL
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -26,6 +27,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 @Serializable
 data class User(val id: Int? = null, val name: String, val age: Int)
+
+@Serializable
+data class GraphQlRequest(val query: String)
+
 
 object Users : Table() {
     val id: Column<Int> = integer("id").autoIncrement()
@@ -64,7 +69,33 @@ fun Application.myapp() {
         }
      }
 
+    val schema = KGraphQL.schema {
+        query("heros") {
+            resolver { ->
+                transaction {
+                    Users.selectAll().map { Users.toUser(it) }
+                }
+            }
+        }
+
+        query("hero") {
+            resolver { id: Int ->
+                transaction {
+                    Users.select{ Users.id eq id }.map { Users.toUser(it) }
+                }
+            }
+        }
+    }
+
+
     install(Routing) {
+
+        route("graphql") {
+            get("/") {
+                val graphRequest = call.receive<GraphQlRequest>()
+                call.respond(schema.execute(graphRequest.query))
+            }
+        }
         route("/user") {
 
             get("/") {

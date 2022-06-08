@@ -1,6 +1,7 @@
 val kotlin_version = "1.6.21"
 val ktor_version = "2.0.2"
 val logback_version = "1.2.11"
+val KGraphQLVersion = "0.17.14"
 
 plugins {
     application
@@ -28,6 +29,8 @@ dependencies {
     implementation("org.jetbrains.exposed", "exposed-jdbc", "0.38.1")
 
     implementation("com.h2database:h2:1.4.200")
+
+    implementation ("com.apurebase:kgraphql:$KGraphQLVersion")
 }
 
 application {
