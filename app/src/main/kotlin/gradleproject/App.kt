@@ -20,6 +20,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -65,6 +66,7 @@ fun Application.myapp() {
 
     install(Routing) {
         route("/user") {
+
             get("/") {
                 val users = transaction {
                     Users.selectAll().map {
@@ -74,9 +76,28 @@ fun Application.myapp() {
                 call.respond(users)
             }
 
+            get("/{id}") {
+                val id = call.parameters["id"]!!.toInt()
+                val users = transaction {
+                    Users.select {
+                        Users.id eq id
+                    }.map {
+                        Users.toUser(it)
+                    }
+                }
+                call.respond(users)
+            }
+
             post("/") {
-                val customer = call.receive<User>()
-                call.respond(customer)
+                val user = call.receive<User>()
+                transaction {
+                    Users.insert {
+                        it[name] = user.name
+                        it[age] = user.age
+
+                    }
+                }
+                call.respond(user)
             }
         }
     }
