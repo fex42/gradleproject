@@ -30,6 +30,7 @@ dependencies {
 
 //    implementation("com.h2database:h2:1.4.200")
     implementation("com.impossibl.pgjdbc-ng", "pgjdbc-ng", "0.8.9")
+    implementation("com.zaxxer", "HikariCP", "5.0.1")
 
     implementation ("com.apurebase:kgraphql:$KGraphQLVersion")
 }

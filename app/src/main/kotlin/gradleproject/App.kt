@@ -4,6 +4,8 @@
 package gradleproject
 
 import com.apurebase.kgraphql.KGraphQL
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -24,6 +26,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import javax.sql.DataSource
 
 @Serializable
 data class User(val id: Int? = null, val name: String, val age: Int)
@@ -51,9 +54,20 @@ fun Application.myapp() {
         json()
     }
 
-    Database.connect("jdbc:pgsql://database:5432/ktor", driver = "com.impossibl.postgres.jdbc.PGDriver",
-        user = "username", password = "secret")
 //    Database.connect("jdbc:h2:mem:regular;DB_CLOSE_DELAY=-1;", "org.h2.Driver")
+
+//    Database.connect("jdbc:pgsql://database:5432/ktor", driver = "com.impossibl.postgres.jdbc.PGDriver",
+//        user = "username", password = "secret")
+
+    val config = HikariConfig().apply {
+        jdbcUrl         = "jdbc:pgsql://database:5432/ktor"
+        driverClassName = "com.impossibl.postgres.jdbc.PGDriver"
+        username        = "username"
+        password        = "secret"
+        maximumPoolSize = 10
+    }
+    val datasource: DataSource = HikariDataSource(config)
+    Database.connect(datasource)
     transaction {
         SchemaUtils.create(Users)
 
